@@ -5,13 +5,13 @@ A zero-dependency HTTP server that exposes shell, file, process, and service-reg
 ## One-Line Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/qirong77/shell-ai-server/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/qirong77/shell-ai-server/master/install.sh | bash
 ```
 
 Custom port and install directory:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/qirong77/shell-ai-server/main/install.sh | bash -s -- --port 8080 --dir /opt/sas
+curl -fsSL https://raw.githubusercontent.com/qirong77/shell-ai-server/master/install.sh | bash -s -- --port 8080 --dir /opt/sas
 ```
 
 The installer auto-detects OS (macOS/Linux), checks/installs Node.js >=18 and pm2, downloads `shell-server.mjs`, and starts the service with pm2.

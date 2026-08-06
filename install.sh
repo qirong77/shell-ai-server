@@ -10,7 +10,7 @@ INSTALL_DIR="/opt/shell-ai-server"
 REPO_RAW="https://raw.githubusercontent.com"
 REPO_OWNER="qirong77"
 REPO_NAME="shell-ai-server"
-REPO_BRANCH="main"
+REPO_BRANCH="master"
 PORT="$DEFAULT_PORT"
 NODE_MIN_MAJOR=18
 
