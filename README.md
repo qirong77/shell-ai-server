@@ -1,36 +1,58 @@
 # shell-ai-server 🖥
 
-A zero-dependency HTTP server that exposes shell, file, process, and service-registry APIs for LLM clients to call.
+A zero-dependency **Go** HTTP server that exposes shell, file, process, and service-registry APIs for LLM clients to call. Ships as a single static binary — **no Node.js or pm2 required**.
 
 ## One-Line Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/qirong77/shell-ai-server/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/qirong77/shell-ai-server/main/install.sh | sh
 ```
 
 Custom port and install directory:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/qirong77/shell-ai-server/master/install.sh | bash -s -- --port 8080 --dir /opt/sas
+curl -fsSL https://raw.githubusercontent.com/qirong77/shell-ai-server/main/install.sh | sh -s -- --port 8080 --dir /opt/sas
 ```
 
-The installer auto-detects OS (macOS/Linux), checks/installs Node.js >=18 and pm2, downloads `shell-server.mjs`, and starts the service with pm2.
+The installer detects your OS (Linux/macOS) and architecture (amd64/arm64), downloads the matching precompiled binary from GitHub Releases, and starts it — via **systemd** on Linux (root) or as a background process elsewhere.
 
 ## Quick Start
 
+Build & run with Go:
+
 ```bash
-node shell-server.mjs              # default port 9100
-PORT=8080 node shell-server.mjs    # custom port
+go build -o shell-ai-server .
+PORT=9100 ./shell-ai-server            # default port 9100
+./shell-ai-server                      # custom via PORT env
 ```
 
-## Run with PM2
+## Run with systemd
 
 ```bash
-pm2 start shell-server.mjs --name shell-ai-server
-pm2 start shell-server.mjs --name shell-ai-server -- --port 8080   # custom port
-pm2 logs shell-ai-server
-pm2 restart shell-ai-server
-pm2 stop shell-ai-server
+cat > /etc/systemd/system/shell-ai-server.service <<EOF
+[Unit]
+Description=Shell AI Server (Go)
+After=network.target
+
+[Service]
+Type=simple
+Environment=PORT=9100
+ExecStart=/opt/shell-ai-server/shell-ai-server
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable --now shell-ai-server
+journalctl -u shell-ai-server -f
+```
+
+## Build for release
+
+```bash
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o shell-ai-server_linux_amd64 .
 ```
 
 ## API Docs
@@ -48,4 +70,6 @@ pm2 stop shell-ai-server
 | Services | `POST /services`, `GET /services`, `PUT /services/:id`, `DELETE /services/:id` |
 | Network | `GET /net/port/:port`, `POST /net/http`, `GET /net/dns` |
 
-No authentication. Data (service registry, task logs) is stored in the system temp directory.
+See `GET /api` for the complete endpoint list with request/response examples.
+
+No authentication. Data (service registry, task logs) is stored in the system temp directory (override with `DATA_DIR`).
