@@ -157,23 +157,23 @@ func portsFromProc() []map[string]interface{} {
 }
 
 func extractPort(line string) int {
-	// Look for a `:port` pattern, prefer the last one before the listeners group.
-	idx := strings.LastIndex(line, ":")
-	if idx >= 0 {
-		p := strings.Fields(line[idx+1:])
-		if len(p) > 0 {
-			// strip after non-digit
-			digits := ""
-			for _, c := range p[0] {
-				if c >= '0' && c <= '9' {
-					digits += string(c)
-				} else if digits != "" {
-					break
-				}
-			}
-			if n, err := strconv.Atoi(digits); err == nil && n > 0 {
-				return n
-			}
+	// Prefer the IPv4/IPv6 local-address token (e.g. "0.0.0.0:9100",
+	// "[::]:443", or "*:9100"). Walk the fields and take the first one whose
+	// trailing port part is a pure numeric token. This avoids the "users:"
+	// segment (which contains a colon and, when multiple procs are listed,
+	// can leak a PID digits as the port).
+	for _, f := range strings.Fields(line) {
+		idx := strings.LastIndex(f, ":")
+		if idx < 0 {
+			continue
+		}
+		tail := f[idx+1:]
+		if tail == "" || tail[0] < '0' || tail[0] > '9' {
+			continue
+		}
+		n, err := strconv.Atoi(strings.TrimRight(tail, ".,;/"))
+		if err == nil && n > 0 && n <= 65535 {
+			return n
 		}
 	}
 	return 0
