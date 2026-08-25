@@ -449,6 +449,11 @@ func anyString(v interface{}) string {
 	if v == nil {
 		return ""
 	}
+	// Preserve raw strings verbatim (used for header/env values), instead of
+	// re-encoding them through json.Marshal (which would add quotes/escapes).
+	if s, ok := v.(string); ok {
+		return s
+	}
 	b, _ := json.Marshal(v)
 	return string(b)
 }

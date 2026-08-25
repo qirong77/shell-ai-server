@@ -74,7 +74,10 @@ func handleFilesWrite(w http.ResponseWriter, r *http.Request) {
 		sendJSON(w, 400, fail("MISSING_PARAM", "Missing 'content' field", nil, nil))
 		return
 	}
-	content := anyString(obj["content"])
+	// `content` must be written verbatim (raw string), matching the Node
+	// implementation. Using anyString here would re-JSON-encode the value and
+	// wrap it in quotes + escape newlines, corrupting the written file.
+	content := stringField(obj, "content")
 	appendMode := false
 	if v, ok := obj["append"].(bool); ok {
 		appendMode = v

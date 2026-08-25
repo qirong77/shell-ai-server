@@ -170,7 +170,7 @@ func handleBatch(w http.ResponseWriter, r *http.Request) {
 				item["ok"] = true
 			}
 		case "write":
-			content := anyString(op["content"])
+			content := stringField(op, "content")
 			if err := os.WriteFile(resolvePath(filePath), []byte(content), 0644); err != nil {
 				item["ok"] = false
 				item["error"] = err.Error()
